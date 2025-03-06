@@ -22,7 +22,20 @@ let previousTimestamp = 0;
 let timeElapsed = 0;
 let canvasElements = new Set<Element>();
 let pathConnections = new Set<{ x1: number; y1: number; x2: number; y2: number }>();
+let tagData = new Set<{ name: string, color: string }>();
 let elementsChanged = false;
+
+const createRandomHSL = () => {
+  return `hsl(${Math.round(Math.random() * 360 + 1)}, ${Math.random() * 100}%, ${Math.random() * 100}%)`;
+}
+
+// const getColorFromTags = (tags: Set<string>) => {
+//   const tagColors = tagData.map((tag) => tag.color);
+
+//   tags.forEach((tag: string) => {
+//     if (tagData.has(tag)) return tag
+//   })
+// }
 
 const draw = () => {
   const startTime = performance.now();
@@ -90,6 +103,11 @@ const animationLoop = (timestamp: number) => {
 };
 
 window.requestAnimationFrame(animationLoop);
+
+// ---
+
+tagData.add({ name: "tag1", color: createRandomHSL() });
+tagData.add({ name: "tag2", color: createRandomHSL() });
 
 canvas.addEventListener("click", (event) => {
   canvasElements.add({ x: event.clientX, y: event.clientY, radius: 5, tags: new Set(["tag1", "tag2"]) });
