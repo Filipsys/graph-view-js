@@ -22,20 +22,33 @@ let previousTimestamp = 0;
 let timeElapsed = 0;
 let canvasElements = new Set<Element>();
 let pathConnections = new Set<{ x1: number; y1: number; x2: number; y2: number }>();
-let tagData = new Set<{ name: string, color: string }>();
+let tagData = new Set<{ name: string; color: string }>();
 let elementsChanged = false;
 
 const createRandomHSL = () => {
-  return `hsl(${Math.round(Math.random() * 360 + 1)}, ${Math.random() * 100}%, ${Math.random() * 100}%)`;
-}
+  return `hsl(${Math.round(Math.random() * 360 + 1)}, ${(Math.random() * 100).toFixed(2)}%, ${(
+    Math.random() * 100
+  ).toFixed(2)}%)`;
+};
 
-// const getColorFromTags = (tags: Set<string>) => {
-//   const tagColors = tagData.map((tag) => tag.color);
+/**
+ * @description Returns the HSL value for the highest
+ * tag value in tagData from the element, else returns `#000`.
+ */
+const getColorFromTags = (tags: Set<string>) => {
+  const tagColors = Array.from(tagData).map((tag) => {
+    return { [tag.name]: tag.color };
+  });
 
-//   tags.forEach((tag: string) => {
-//     if (tagData.has(tag)) return tag
-//   })
-// }
+  let highestColor = "";
+  tags.forEach((tag: string) => {
+    const matchingTag = tagColors.find((tagItem) => Object.keys(tagItem)[0] === tag);
+
+    if (matchingTag) highestColor = matchingTag[tag];
+  });
+
+  return highestColor ? highestColor : "#000";
+};
 
 const draw = () => {
   const startTime = performance.now();
@@ -47,6 +60,8 @@ const draw = () => {
   // Draw the elements
   context.fillStyle = elementColor;
   canvasElements.forEach((element) => {
+    if (element.tags) context.fillStyle = getColorFromTags(element.tags);
+
     context.beginPath();
     context.arc(element.x, element.y, element.radius, 0, Math.PI * 2);
     context.closePath();
@@ -54,9 +69,8 @@ const draw = () => {
   });
 
   // Draw the paths
+  context.strokeStyle = pathColor;
   pathConnections.forEach((path) => {
-    context.strokeStyle = pathColor;
-
     context.beginPath();
     context.moveTo(path.x1, path.y1);
     context.lineTo(path.x2, path.y2);
@@ -108,6 +122,7 @@ window.requestAnimationFrame(animationLoop);
 
 tagData.add({ name: "tag1", color: createRandomHSL() });
 tagData.add({ name: "tag2", color: createRandomHSL() });
+console.log(getColorFromTags(new Set(["tag1", "tag2"])));
 
 canvas.addEventListener("click", (event) => {
   canvasElements.add({ x: event.clientX, y: event.clientY, radius: 5, tags: new Set(["tag1", "tag2"]) });
